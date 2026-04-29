@@ -3,7 +3,7 @@ import { inertia } from '@hono/inertia'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { rootView } from './root-view'
-import { createUser, findUser, listUsers } from './data'
+import { createUser, deleteUser, findUser, listUsers } from './data'
 
 const userInput = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -29,6 +29,12 @@ const routes = app
     const user = findUser(id)
     if (!user) return c.notFound()
     return c.render('Users/Show', { user })
+  })
+  .delete('/users/:id{[0-9]+}', (c) => {
+    const id = Number(c.req.param('id'))
+    const deleted = deleteUser(id)
+    if (!deleted) return c.notFound()
+    return c.redirect('/users', 303)
   })
   .post(
     '/users',

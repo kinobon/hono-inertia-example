@@ -22,3 +22,10 @@ export const createUser = (input: Omit<User, 'id'>): User => {
   users.push(user)
   return user
 }
+
+export const deleteUser = (id: number): boolean => {
+  const index = users.findIndex((u) => u.id === id)
+  if (index === -1) return false
+  users.splice(index, 1)
+  return true
+}

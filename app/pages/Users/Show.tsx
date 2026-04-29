@@ -1,8 +1,10 @@
-import { Head, Link } from '@inertiajs/react'
+import { Head, Link, useForm } from '@inertiajs/react'
 import type { PageProps } from '../../pages.gen'
 import Layout from '../Layout'
 
 export default function UsersShow({ user }: PageProps<'Users/Show'>) {
+  const deleteForm = useForm({})
+
   return (
     <Layout>
       <Head title={user.name} />
@@ -16,6 +18,16 @@ export default function UsersShow({ user }: PageProps<'Users/Show'>) {
         <dt>Bio</dt>
         <dd>{user.bio}</dd>
       </dl>
+      <button
+        disabled={deleteForm.processing}
+        onClick={() => {
+          if (confirm(`Delete ${user.name}?`)) {
+            deleteForm.delete(`/users/${user.id}`)
+          }
+        }}
+      >
+        Delete
+      </button>
     </Layout>
   )
 }
