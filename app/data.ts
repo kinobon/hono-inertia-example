@@ -29,3 +29,11 @@ export const deleteUser = (id: number): boolean => {
   users.splice(index, 1)
   return true
 }
+
+export const updateUser = (id: number, input: Omit<User, 'id'>): User | undefined => {
+  const index = users.findIndex((u) => u.id === id)
+  if (index === -1) return undefined
+  const user: User = { id, ...input }
+  users[index] = user
+  return user
+}

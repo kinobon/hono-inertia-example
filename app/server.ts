@@ -3,7 +3,7 @@ import { inertia } from '@hono/inertia'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { rootView } from './root-view'
-import { createUser, deleteUser, findUser, listUsers } from './data'
+import { createUser, deleteUser, findUser, listUsers, updateUser } from './data'
 
 const userInput = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -30,6 +30,44 @@ const routes = app
     if (!user) return c.notFound()
     return c.render('Users/Show', { user })
   })
+  .get('/users/:id{[0-9]+}/edit', (c) => {
+    const id = Number(c.req.param('id'))
+    const user = findUser(id)
+    if (!user) return c.notFound()
+    return c.render('Users/Edit', { user, errors: {} as Record<string, string> })
+  })
+  .put(
+    '/users/:id{[0-9]+}',
+    zValidator('json', userInput, (result, c) => {
+      if (!result.success) {
+        const id = Number(c.req.param('id'))
+        const user = findUser(id)
+        if (!user) return c.notFound()
+        const fieldErrors = z.flattenError(result.error).fieldErrors
+        const errors: Record<string, string> = {}
+        for (const [key, messages] of Object.entries(fieldErrors)) {
+          if (messages && messages.length > 0) errors[key] = messages[0]
+        }
+        const raw = (result as { data?: Record<string, unknown> }).data ?? {}
+        return c.render('Users/Edit', {
+          user: {
+            ...user,
+            name: typeof raw.name === 'string' ? raw.name : user.name,
+            email: typeof raw.email === 'string' ? raw.email : user.email,
+            bio: typeof raw.bio === 'string' ? raw.bio : user.bio
+          },
+          errors
+        })
+      }
+    }),
+    (c) => {
+      const id = Number(c.req.param('id'))
+      const input = c.req.valid('json')
+      const user = updateUser(id, input)
+      if (!user) return c.notFound()
+      return c.redirect(`/users/${id}`, 303)
+    }
+  )
   .delete('/users/:id{[0-9]+}', (c) => {
     const id = Number(c.req.param('id'))
     const deleted = deleteUser(id)

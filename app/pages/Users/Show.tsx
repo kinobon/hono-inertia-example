@@ -18,6 +18,9 @@ export default function UsersShow({ user }: PageProps<'Users/Show'>) {
         <dt>Bio</dt>
         <dd>{user.bio}</dd>
       </dl>
+      <p>
+        <Link href={`/users/${user.id}/edit`}>Edit</Link>
+      </p>
       <button
         disabled={deleteForm.processing}
         onClick={() => {
